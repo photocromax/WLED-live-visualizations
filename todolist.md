@@ -8,7 +8,7 @@ need to be added to index.html (before "FX mode")
     align-content: center;
     scroll-behavior: auto;
     width: fit-content;
-    height: 25px;
+    height: 30px;
     "></iframe>
     
 ------
