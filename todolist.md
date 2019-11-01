@@ -12,6 +12,6 @@ CRGB
 index.html (to be added before "FX mode")
 
 ------
-<iframe id="lv" scrolling="no" src="/liveview" style=" border-style: solid; border-color=black; justify-content: center; width: 100%; height: 40px; "></iframe>
+<iframe id="lv" scrolling="no" src="/liveview" style=" border-style: none;  justify-content: center; width: 100%; height: 35px; "></iframe>
     
 ------
