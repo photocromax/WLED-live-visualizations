@@ -11,10 +11,10 @@ CRGB
 ------
 ------
 
-html_classic.h | html_mobile.h 
+html_classic.h 
 ------
 
-add before "FX mode" or in any other useful place
+add in any other useful place. I already modified html_mobile.h
 
 <iframe id="lv" scrolling="no" src="/liveview" style=" border-style: none;  justify-content: center; width: 100%; height: 35px; "></iframe>
     
