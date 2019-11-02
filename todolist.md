@@ -20,6 +20,19 @@ CRGB
 ------
 ------
 
+wled18_server
+
+------
+add
+
+server.on("/liveview", HTTP_GET, [](AsyncWebServerRequest *request){
+    serveLiveView(request);
+  });
+
+------
+------
+
+
 index.html (to be added before "FX mode" or in any other useful place)
 
 ------
