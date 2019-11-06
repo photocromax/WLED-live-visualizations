@@ -215,21 +215,29 @@ function cl() {
      document.body.appendChild(a);
      a.appendChild(img);   
      a.click(); 
-	 console.log("FX_"+m+".gif Generation Finished");
-	 gif=null;
-	 delete gif;
-	 if (fx<fxCount) {
-		fx++;
-		postToState();
-		setTimeout(cl,60000);  //wait the canvas is renewed with new effect
-	 }
-  }); 
+     document.body.removeChild(a); 
+     console.log("FX_"+m+".gif Generation Finished");
+     gif=null;
+     delete gif;
+     if (fx<fxCount) {
+	fx++;
+	postToState();
+	setTimeout(cl,60000);  //wait the canvas is renewed with new effect
+     }
+  });
+	
   record=true; 
   console.log("GIF Generation Started")
 }
+	
+	
+	
+	
 fx=2;
 postToState();
 setup();
+	
+	
 </script>
 <br/><input type="button" value="Generate GIFs" onclick="cl()"><br/>
 </body>
