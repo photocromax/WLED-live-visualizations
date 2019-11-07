@@ -8,4 +8,4 @@ s = Size of the box representing the pixel (unit: px)
 
 q = gif Quality from 1 to 30 (lower is better)
 
-d = gif's Duration (in seconds)
+d = gif's Duration (unit: seconds)
