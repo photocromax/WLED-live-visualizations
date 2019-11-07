@@ -33,7 +33,7 @@ var record=false;
 var fxCount=83;
 var fx=0;
 gif = null;
-gifDuration=40000;
+gifDuration=20000;
 maxGifFrames=500
 gifFrames=0;
 quality=1; //gif quality [1-30] (1 is better)
@@ -150,23 +150,26 @@ function drawLights(strip) {
     mpi=strip.mpi //multipartIndex
     mi=strip.mi; // millis since last frame
     prev_leds=strip.leds; //update previous strip state with actual state
-    pl=strip.leds.length; // part length 
-        for (i = 0; i < pl; i++) {
+    mpl=strip.leds.length; // multipart length 
+    for (i = 0; i < mpl; i++) {
        renderLight(i+mpi*multipartSize, strip.leds[i],false);
     }
+    if (record) {
+      //gif.addFrame(ctx, {copy: true, delay:20});
+      if (mi>500) {
+        mi=500;
+      }
+      gif.addFrame(canvas,{delay:mi});
+      gifTimeRemaining -= mi;
+      gifFrames++;
+      if (gifTimeRemaining<0 || gifFrames>maxGifFrames ) {
+	   record=false;
+           gif.render();    
+      }
+    }  
   }
   delete strip;  // local variable to the GC
   delete namespace.strip; // global variable to the GC
-  if (record) {
-     //gif.addFrame(ctx, {copy: true, delay:20});
-     gif.addFrame(canvas,{delay:mi});
-	   gifTimeRemaining -= mi;
-     gifFrames++;
-     if (gifTimeRemaining<0 || gifFrames>maxGifFrames ) {
-	   record=false;
-       gif.render();    
-     }
-  }
   pcm_loadJSON(url,drawLights,errorDrawLights);  //request new  strip state
 }
 
