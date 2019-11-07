@@ -34,6 +34,8 @@ var fxCount=83;
 var fx=0;
 gif = null;
 gifDuration=40000;
+maxGifFrames=500
+gifFrames=0;
 quality=1; //gif quality [1-30] (1 is better)
 gifTimeRemaining=gifDuration;
 
@@ -160,7 +162,7 @@ function drawLights(strip) {
      gif.addFrame(canvas,{delay:mi});
 	   gifTimeRemaining -= mi;
      gifFrames++;
-     if (gifTimeRemaining<0 || gifFrames>500 ) {
+     if (gifTimeRemaining<0 || gifFrames>maxGifFrames ) {
 	   record=false;
        gif.render();    
      }
@@ -209,7 +211,7 @@ function cl() {
      var img = document.createElement("img");                 
      img.src = URL.createObjectURL(blob);
      var a = document.createElement("a");
-	 a.style.display = "none";
+     a.style.display = "none";
      a.href= img.src;
      a.download="FX_"+m+".gif";
      document.body.appendChild(a);
@@ -219,10 +221,11 @@ function cl() {
      console.log("FX_"+m+".gif Generation Finished");
      gif=null;
      delete gif;
+     setTimeout(function(){delete blob;},2000);
      if (fx<fxCount) {
 	fx++;
 	postToState();
-	setTimeout(cl,60000);  //wait the canvas is renewed with new effect
+	setTimeout(cl,20000);  //wait the canvas is renewed with new effect
      }
   });
 	
@@ -233,7 +236,7 @@ function cl() {
 	
 	
 	
-fx=2;
+fx=0;
 postToState();
 setup();
 	
