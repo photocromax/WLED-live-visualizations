@@ -1,4 +1,4 @@
-Subdirectories contains pre-generated gifs using 2 colors (default wled orange and its blue opposite)
+Subdirectories contains pre-generated gifs using 2 colors (default wled orange and its blue opposite). The strip is displayed in zigzag order
 
 Naming convention:
 
