@@ -8,3 +8,5 @@ https://chrome.google.com/webstore/detail/web-server-for-chrome/ofhbbkphhbklhfoe
 It uses gif.js in order to create the gif files. For ease of use I've included the two javascript files in the repository, but you can find the original ones here
 https://github.com/jnordberg/gif.js/dist
 
+Inside the pregen folder you could find different sets of GIFs pregenerated.
+
