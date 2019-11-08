@@ -81,6 +81,7 @@
 #include "html_other.h"
 #include "FX.h"
 #include "ir_codes.h"
+
 #ifndef WLED_DISABLE_LIVEVIEW
   #include "html_liveview.h"
 #endif
@@ -134,8 +135,8 @@ byte apHide = 0;                              //hidden AP SSID
 //byte apWaitTimeSecs = 32;                   //time to wait for connection before opening AP
 byte apBehavior = 0;                          //0: Open AP when no connection after boot 1: Open when no connection 2: Always open 3: Only when button pressed for 6 sec
 //bool recoveryAPDisabled = false;            //never open AP (not recommended)
-IPAddress staticIP(0, 0, 0, 0);               //static IP of ESP
-IPAddress staticGateway(0, 0, 0, 0);          //gateway (router) IP
+IPAddress staticIP(192, 168, 1, 16);               //static IP of ESP
+IPAddress staticGateway(192, 168, 1, 1);          //gateway (router) IP
 IPAddress staticSubnet(255, 255, 255, 0);     //most common subnet in home networks
 
 //LED CONFIG
@@ -259,6 +260,9 @@ byte macroButton = 0, macroLongPress = 0, macroDoublePress = 0;
 bool otaLock = false;                         //prevents OTA firmware updates without password. ALWAYS enable if system exposed to any public networks
 bool wifiLock = false;                        //prevents access to WiFi settings when OTA lock is enabled
 bool aOtaEnabled = true;                      //ArduinoOTA allows easy updates directly from the IDE. Careful, it does not auto-disable when OTA lock is on
+
+//LiveView setting
+uint32_t multipartSize = 120;
 
 
 uint16_t userVar0 = 0, userVar1 = 0;
