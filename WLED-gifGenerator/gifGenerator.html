@@ -9,7 +9,6 @@
 
 
 host="http://<your wled ip>";
-url = host+"/json/live";  // live strip state json format 
 
 var windowWidth = 500;
 var windowHeight = 500;
@@ -37,11 +36,11 @@ quality=10; //gif quality [1-30] (1 is better)
 gifTimeRemaining=gifDuration;
 prev_mi=0;
 
-function pcm_loadJSON(url,cbk,cbkError){
+function pcm_loadJSON(cbk,cbkError){
     var httpReq = new XMLHttpRequest(); 
     httpReq.overrideMimeType("application/json");
     httpReq.addEventListener("error", cbkError, false);
-    httpReq.open("GET",url,true);
+    httpReq.open("GET",host+"/json/live",true);
     httpReq.responseType="json";
     httpReq.onload=function(e) {
       var json= httpReq.response;
@@ -106,7 +105,7 @@ function renderLight(light, col, stroke) {
 }
 
 function errorDrawLights(err){
-  pcm_loadJSON(url,drawLights,errorDrawLights); //get actual strip state AGAIN
+  pcm_loadJSON(drawLights,errorDrawLights); //get actual strip state AGAIN
   //console.log("frame reloaded");
 }
 
@@ -154,7 +153,7 @@ function drawLights(strip) {
   }
   delete strip;  // local variable to the GC
   }  
-  pcm_loadJSON(url,drawLights,errorDrawLights);  //request new  strip state
+  pcm_loadJSON(drawLights,errorDrawLights);  //request new  strip state
 }
 
 function getWindowSize(){
@@ -173,7 +172,7 @@ function pcm_setup() {
   window.onresize = windowResize;
   getWindowSize();
   pcm_resizeCanvas(false);
-  pcm_loadJSON(url,drawLights,errorDrawLights); //get actual strip state
+  pcm_loadJSON(drawLights,errorDrawLights); //get actual strip state
 }
 
 function postToState() {
