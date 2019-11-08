@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head><meta name="viewport" content="width=500" charset="utf-8" >
+<html><head><meta name="viewport" content="width=100" charset="utf-8" >
 <script src="/gif.js/gif.js"></script>
 <style>html, body {margin: 0;padding: 0;justify-content: center;}canvas {display: block;}</style>
 <title>Live View</title>
@@ -8,51 +8,34 @@
 <script>
 
 
-var namespace = {};
 host="http://<your wled ip>";
 url = host+"/json/live";  // live strip state json format 
 
 var windowWidth = 500;
 var windowHeight = 500;
-var lightSize = 20; // light box size
+var lightSize = 10; // light box size
 var lines=0;
 var multipartSize=120;  //refer to wled21_liveview multipartSize global variable. (it has to be the same value)
 var lightPerLines=1;
 var numLights = 0; 
 var canvas ;  
-var ctx ;
+ctx  =null;
 var m=-1;
 var mi=-1;
 var mpi=0;
 
-
 prev_leds = (["#000000"]);  //previous strip state
-namespace.strip = {"leds":["#ffffff"]}; //arbitrary strip state 
+
+
 
 var record=false;
 var fxCount=83;
 var fx=0;
 gif = null;
 gifDuration=20000;
-maxGifFrames=500
-gifFrames=0;
-quality=1; //gif quality [1-30] (1 is better)
+quality=10; //gif quality [1-30] (1 is better)
 gifTimeRemaining=gifDuration;
-
-function setup(){
-  //noLoop();
-  canvas = document.getElementById("liveCanvas");  
-  ctx = canvas.getContext("2d");
-  pcm_setup();
-}
-
-
-function draw(){
-   setTimeout(function(){  }, 25); //get actual strip state AGAIN
- }
-
-
-
+prev_mi=0;
 
 function pcm_loadJSON(url,cbk,cbkError){
     var httpReq = new XMLHttpRequest(); 
@@ -90,7 +73,6 @@ function pcm_resizeCanvas(noRedraw){
 
 
 function pcm_clearCanvas(cnv) {
- //var ctx = canvas.getContext("2d");  
  ctx.clearRect(0,0,cnv.width,cnv.height);
   for (i = 0; i < numLights ; i++) {
        renderLight(i, "",true);
@@ -113,7 +95,6 @@ function renderLight(light, col, stroke) {
   }
   x = reverse+drawDirection*((light % lightsPerLine) * lightSize+0.5*drawDirection);
   y = line * lightSize+0.5;
-  //var ctx = canvas.getContext("2d");
   if (!stroke){
     ctx.fillStyle = col; 
     ctx.fillRect(x+0.5, y+0.5, lightSize-1, lightSize-1); //create the square representing the light (left, top, width, height)
@@ -125,20 +106,21 @@ function renderLight(light, col, stroke) {
 }
 
 function errorDrawLights(err){
-  setTimeout(function(){ pcm_loadJSON(url,drawLights,errorDrawLights); }, 1); //get actual strip state AGAIN
+  pcm_loadJSON(url,drawLights,errorDrawLights); //get actual strip state AGAIN
   //console.log("frame reloaded");
 }
 
 function drawLights(strip) {
+  t=Date.now();
   try {
     if (strip === null) throw "empty json";
   }
   catch(err) {
     delete strip;  // local variable to the GC
-    errorDrawLights();
+    //errorDrawLights();
     console.log(err);
-    return "";
   }
+  if (strip !== null) { 
   if ( numLights != strip.lc) {
       numLights = strip.lc;  
       pcm_resizeCanvas(false);
@@ -154,22 +136,24 @@ function drawLights(strip) {
     for (i = 0; i < mpl; i++) {
        renderLight(i+mpi*multipartSize, strip.leds[i],false);
     }
-    if (record) {
-      //gif.addFrame(ctx, {copy: true, delay:20});
-      if (mi>500) {
-        mi=500;
+	 if (record) {	  
+	  if (prev_mi==0) {
+        prev_mi=mi;
       }
-      gif.addFrame(canvas,{delay:mi});
-      gifTimeRemaining -= mi;
-      gifFrames++;
-      if (gifTimeRemaining<0 || gifFrames>maxGifFrames ) {
-	   record=false;
-           gif.render();    
+	  //console.log(prev_mi);
+	  prev_mi=Math.floor(prev_mi/2);
+      gif.addFrame(ctx, {copy: true, delay: prev_mi});
+	  gifTimeRemaining -= prev_mi;
+     prev_mi=mi
+	  if (gifTimeRemaining<0  ) {
+       record=false;
+	   console.log("Gif rendering...");
+       gif.render();    
       }
-    }  
+    } 
   }
   delete strip;  // local variable to the GC
-  delete namespace.strip; // global variable to the GC
+  }  
   pcm_loadJSON(url,drawLights,errorDrawLights);  //request new  strip state
 }
 
@@ -184,6 +168,8 @@ function windowResize(){
  }  
 
 function pcm_setup() {
+  canvas = document.getElementById("liveCanvas");  
+  ctx = canvas.getContext("2d");
   window.onresize = windowResize;
   getWindowSize();
   pcm_resizeCanvas(false);
@@ -200,50 +186,44 @@ xmlhttp.send(JSON.stringify({"seg":[{"fx": fx}]  }));
 
 function cl() {
   gifTimeRemaining=gifDuration;
+  prev_t=Date.now();
   gif = new GIF({
      workers: 8,
      workerScript: '/gif.js/gif.worker.js',
      quality: quality,
-     width: null,
-     height: null,
+     width: canvas.width,
+     height: canvas.height,
      debug:false
   });
-  gifFrames=0;
   gif.on('finished', function(blob) {
-     //window.open(URL.createObjectURL(blob));
-     var img = document.createElement("img");                 
-     img.src = URL.createObjectURL(blob);
+     //var img = document.createElement("img");                 
+     //img.src = URL.createObjectURL(blob);
      var a = document.createElement("a");
-     a.style.display = "none";
-     a.href= img.src;
+	 a.style.display = "none";
+     a.href= URL.createObjectURL(blob);
      a.download="FX_"+m+".gif";
      document.body.appendChild(a);
-     a.appendChild(img);   
+     //a.appendChild(img);   
      a.click(); 
-     document.body.removeChild(a); 
-     console.log("FX_"+m+".gif Generation Finished");
-     gif=null;
-     delete gif;
-     setTimeout(function(){delete blob;},2000);
-     if (fx<fxCount) {
-	fx++;
-	postToState();
-	setTimeout(cl,20000);  //wait the canvas is renewed with new effect
-     }
-  });
-	
+	 document.body.removeChild(a);
+	 console.log("FX_"+m+".gif Generation Finished");
+	 gif=null;
+	 delete gif;
+	 setTimeout(function(){delete blob;},2000);
+	 fx++;	
+	 if (fx<fxCount) {
+		postToState();
+		setTimeout(cl,10000);  //wait the canvas is renewed with new effect
+	 } else {
+	    window.location.reload();  //reload the page 
+	 }
+  }); 
   record=true; 
   console.log("GIF Generation Started")
 }
-	
-	
-	
-	
-fx=0;
+fx=1;
 postToState();
-setup();
-	
-	
+pcm_setup();
 </script>
 <br/><input type="button" value="Generate GIFs" onclick="cl()"><br/>
 </body>
