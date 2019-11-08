@@ -2,7 +2,7 @@
 <html><head><meta name="viewport" content="width=100" charset="utf-8" >
 <script src="/gif.js/gif.js"></script>
 <style>html, body {margin: 0;padding: 0;justify-content: center;}canvas {display: block;}</style>
-<title>Live View</title>
+<title>WLED Gif Generator</title>
 <body style="background-color:#333333;" >
 <canvas id="liveCanvas"  width="5" height="5" style="width: 5px; height: 5px; position: absolute; top: 100px; left: 0px; right: 0px;  margin: auto;"></canvas>
 <script>
@@ -28,10 +28,11 @@ prev_leds = (["#000000"]);  //previous strip state
 
 
 var record=false;
+var play=true;
 var fxCount=83;
 var fx=0;
 gif = null;
-gifDuration=20000;
+gifDuration=10000;
 quality=10; //gif quality [1-30] (1 is better)
 gifTimeRemaining=gifDuration;
 prev_mi=0;
@@ -105,12 +106,13 @@ function renderLight(light, col, stroke) {
 }
 
 function errorDrawLights(err){
+  if (play){  
   pcm_loadJSON(drawLights,errorDrawLights); //get actual strip state AGAIN
+  }
   //console.log("frame reloaded");
 }
 
 function drawLights(strip) {
-  t=Date.now();
   try {
     if (strip === null) throw "empty json";
   }
@@ -135,25 +137,27 @@ function drawLights(strip) {
     for (i = 0; i < mpl; i++) {
        renderLight(i+mpi*multipartSize, strip.leds[i],false);
     }
-    if (record) {	  
-	if (prev_mi==0) {
-		prev_mi=mi;
-      	}
-	//console.log(prev_mi);
-	prev_mi=Math.floor(prev_mi/2);
-      	gif.addFrame(ctx, {copy: true, delay: prev_mi});
-	gifTimeRemaining -= prev_mi;
-     	prev_mi=mi
-	if (gifTimeRemaining<0  ) {
-       		record=false;
-	   	console.log("Gif rendering...");
-       		gif.render();    
-      	}
+	 if (record) {	  
+	  if (prev_mi==0) {
+        prev_mi=mi;
+      }
+	  //console.log(prev_mi);
+	  prev_mi=Math.floor(prev_mi/2);
+      gif.addFrame(ctx, {copy: true, delay: prev_mi});
+	  gifTimeRemaining -= prev_mi;
+     prev_mi=mi
+	  if (gifTimeRemaining<0  ) {
+       record=false;
+	   console.log("Gif rendering...");
+       gif.render();    
+      }
     } 
   }
   delete strip;  // local variable to the GC
   }  
-  pcm_loadJSON(drawLights,errorDrawLights);  //request new  strip state
+  if (play){  
+    pcm_loadJSON(drawLights,errorDrawLights);  //request new  strip state
+  }
 }
 
 function getWindowSize(){
@@ -182,11 +186,10 @@ xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 xmlhttp.send(JSON.stringify({"seg":[{"fx": fx}]  }));
 }
 
-
 function cl() {
   gifTimeRemaining=gifDuration;
   gif = new GIF({
-     workers: 4,
+     workers: 8,
      workerScript: '/gif.js/gif.worker.js',
      quality: quality,
      width: canvas.width,
@@ -195,31 +198,42 @@ function cl() {
   });
   gif.on('finished', function(blob) {
      var a = document.createElement("a");
-     a.style.display = "none";
+	 a.style.display = "none";
      a.href= URL.createObjectURL(blob);
      a.download="FX_"+m+".gif";
      document.body.appendChild(a);
      a.click(); 
-     document.body.removeChild(a);
-     console.log("FX_"+m+".gif Generation Finished");
-     gif=null;
-     delete gif;
-     setTimeout(function(){delete blob;},2000);
-     fx++;	
-     if (fx<fxCount) {
-	postToState();
-	setTimeout(cl,10000);  //wait the canvas is renewed with new effect
-     } else {
-	window.location.reload();  //reload the page 
-     }
+	 document.body.removeChild(a);
+	 console.log("FX_"+m+".gif Generation Finished");
+	 gif=null;
+	 delete gif;
+	 setTimeout(function(){delete blob;},2000);
+	 fx++;	
+	 if (fx<fxCount) {
+		postToState();
+		setTimeout(cl,gifDuration);  //wait the canvas is renewed with new effect
+	 } else {
+	    //window.location.reload();  //reload the page 
+		play=false;
+	 }
   }); 
   record=true; 
   console.log("GIF Generation Started")
+}
+
+function pp() {
+  play= !play;
+  if (play){
+    pcm_setup();
+	console.log("Liveview Started");
+  } else {
+    console.log("Liveview Paused");
+  }
 }
 fx=1;
 postToState();
 pcm_setup();
 </script>
-<br/><input type="button" value="Generate GIFs" onclick="cl()"><br/>
+<br/><input type="button" value="Generate GIFs" onclick="cl()">&nbsp;<input type="button" value="Play/Pause" onclick="pp()"><br/>
 </body>
 </html>
