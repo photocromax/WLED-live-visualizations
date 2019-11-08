@@ -339,6 +339,7 @@ String settingsProcessor(const String& var)
     return String(buf);
   }
   if (var == "SCSS") return String(FPSTR(PAGE_settingsCss));
+  if (var == "MPS") return String(multipartSize);
   return String();
 }
 
