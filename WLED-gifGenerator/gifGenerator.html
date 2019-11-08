@@ -136,20 +136,20 @@ function drawLights(strip) {
     for (i = 0; i < mpl; i++) {
        renderLight(i+mpi*multipartSize, strip.leds[i],false);
     }
-	 if (record) {	  
-	  if (prev_mi==0) {
-        prev_mi=mi;
-      }
-	  //console.log(prev_mi);
-	  prev_mi=Math.floor(prev_mi/2);
-      gif.addFrame(ctx, {copy: true, delay: prev_mi});
-	  gifTimeRemaining -= prev_mi;
-     prev_mi=mi
-	  if (gifTimeRemaining<0  ) {
-       record=false;
-	   console.log("Gif rendering...");
-       gif.render();    
-      }
+    if (record) {	  
+	if (prev_mi==0) {
+		prev_mi=mi;
+      	}
+	//console.log(prev_mi);
+	prev_mi=Math.floor(prev_mi/2);
+      	gif.addFrame(ctx, {copy: true, delay: prev_mi});
+	gifTimeRemaining -= prev_mi;
+     	prev_mi=mi
+	if (gifTimeRemaining<0  ) {
+       		record=false;
+	   	console.log("Gif rendering...");
+       		gif.render();    
+      	}
     } 
   }
   delete strip;  // local variable to the GC
@@ -186,9 +186,8 @@ xmlhttp.send(JSON.stringify({"seg":[{"fx": fx}]  }));
 
 function cl() {
   gifTimeRemaining=gifDuration;
-  prev_t=Date.now();
   gif = new GIF({
-     workers: 8,
+     workers: 4,
      workerScript: '/gif.js/gif.worker.js',
      quality: quality,
      width: canvas.width,
@@ -196,27 +195,24 @@ function cl() {
      debug:false
   });
   gif.on('finished', function(blob) {
-     //var img = document.createElement("img");                 
-     //img.src = URL.createObjectURL(blob);
      var a = document.createElement("a");
-	 a.style.display = "none";
+     a.style.display = "none";
      a.href= URL.createObjectURL(blob);
      a.download="FX_"+m+".gif";
      document.body.appendChild(a);
-     //a.appendChild(img);   
      a.click(); 
-	 document.body.removeChild(a);
-	 console.log("FX_"+m+".gif Generation Finished");
-	 gif=null;
-	 delete gif;
-	 setTimeout(function(){delete blob;},2000);
-	 fx++;	
-	 if (fx<fxCount) {
-		postToState();
-		setTimeout(cl,10000);  //wait the canvas is renewed with new effect
-	 } else {
-	    window.location.reload();  //reload the page 
-	 }
+     document.body.removeChild(a);
+     console.log("FX_"+m+".gif Generation Finished");
+     gif=null;
+     delete gif;
+     setTimeout(function(){delete blob;},2000);
+     fx++;	
+     if (fx<fxCount) {
+	postToState();
+	setTimeout(cl,10000);  //wait the canvas is renewed with new effect
+     } else {
+	window.location.reload();  //reload the page 
+     }
   }); 
   record=true; 
   console.log("GIF Generation Started")
