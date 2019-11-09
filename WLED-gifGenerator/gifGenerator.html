@@ -8,7 +8,7 @@
 <script>
 
 
-host="http://<your wled ip>";
+host="http://192.168.1.16";
 
 var windowWidth = 500;
 var windowHeight = 500;
@@ -20,6 +20,7 @@ var numLights = 0;
 var canvas ;  
 ctx  =null;
 var m=-1;
+var pl=-1;
 var mi=-1;
 var mpi=0;
 
@@ -31,8 +32,10 @@ var record=false;
 var play=true;
 var fxCount=83;
 var fx=0;
+var palCount=50;
+var pal=0;
 gif = null;
-gifDuration=10000;
+gifDuration=20000;
 quality=10; //gif quality [1-30] (1 is better)
 gifTimeRemaining=gifDuration;
 prev_mi=0;
@@ -126,11 +129,12 @@ function drawLights(strip) {
       numLights = strip.lc;  
       pcm_resizeCanvas(false);
   }
-  else if( prev_leds==strip.leds  && m==strip.m && mpi==strip.mpi) {
+  else if( prev_leds==strip.leds  && m==strip.fx && pl==strip.pal && mpi==strip.mpi) {
     mi=0; //millis since last frame
   } else {
     m=strip.m;  // effect mode index
-    mpi=strip.mpi //multipartIndex
+    pl=strip.pal;  //palette index
+	mpi=strip.mpi //multipartIndex
     mi=strip.mi; // millis since last frame
     prev_leds=strip.leds; //update previous strip state with actual state
     mpl=strip.leds.length; // multipart length 
@@ -179,11 +183,12 @@ function pcm_setup() {
   pcm_loadJSON(drawLights,errorDrawLights); //get actual strip state
 }
 
-function postToState() {
+function postToState(key, val) {
 var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
 xmlhttp.open("POST", host+"/json/state");
 xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-xmlhttp.send(JSON.stringify({"seg":[{"fx": fx}]  }));
+console.log( JSON.stringify({"seg":[{[key]:val}]  }));
+xmlhttp.send(JSON.stringify({"seg":[{[key]:val}]  }));
 }
 
 function cl() {
@@ -200,17 +205,29 @@ function cl() {
      var a = document.createElement("a");
 	 a.style.display = "none";
      a.href= URL.createObjectURL(blob);
-     a.download="FX_"+m+".gif";
+	 if (pal==0) {
+	    fn="FX_"+m+".gif";
+	 } else {
+	    fn="PAL_"+pal+".gif";	 
+	 }
+	 a.download=fn;
      document.body.appendChild(a);
      a.click(); 
 	 document.body.removeChild(a);
-	 console.log("FX_"+m+".gif Generation Finished");
+	 console.log(fn+" Generation Finished");
 	 gif=null;
 	 delete gif;
 	 setTimeout(function(){delete blob;},2000);
-	 fx++;	
-	 if (fx<fxCount) {
-		postToState();
+	 if (pal==0) {
+	    fx++;
+	 } else {
+	    pal++;
+	 }
+	 if (fx<fxCount && pal==0) {
+		postToState("fx",fx);
+		setTimeout(cl,gifDuration);  //wait the canvas is renewed with new effect
+	 }else if (pal<palCount ) {
+		postToState("pal",pal);
 		setTimeout(cl,gifDuration);  //wait the canvas is renewed with new effect
 	 } else {
 	    //window.location.reload();  //reload the page 
@@ -230,8 +247,11 @@ function pp() {
     console.log("Liveview Paused");
   }
 }
-fx=1;
-postToState();
+fx=2;
+pal=1;
+if (pal!=0) fx=50; //40 scanner, 50 out out
+postToState("fx",fx);
+postToState("pal",pal);
 pcm_setup();
 </script>
 <br/><input type="button" value="Generate GIFs" onclick="cl()">&nbsp;<input type="button" value="Play/Pause" onclick="pp()"><br/>
