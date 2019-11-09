@@ -8,7 +8,7 @@
 <script>
 
 
-host="http://192.168.1.16";
+host="http://<wled ip>";
 
 var windowWidth = 500;
 var windowHeight = 500;
@@ -247,7 +247,7 @@ function pp() {
     console.log("Liveview Paused");
   }
 }
-fx=2;
+fx=1;
 pal=1;
 if (pal!=0) fx=50; //40 scanner, 50 out out
 postToState("fx",fx);
