@@ -564,7 +564,7 @@ function GIO()
 
 function EC(eurl){
 	uB();
-	
+	/*
 	var u=eurl.indexOf("FX=");
 	if (u>-1) {
 	  ind=eurl.substring(u+3);
@@ -579,8 +579,9 @@ function EC(eurl){
 	  selectLi("pal"+pal,"pal"+ind);
 	  pal=ind;
 	}
+	*/
 	d.getElementById('stf').src = eurl;
-	setTimeout(GIO,50);	   
+	GIO();	   
 }
 function pC(col) {
  var pc = iro.Color.parseHexStr(col);
