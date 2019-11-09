@@ -9,16 +9,12 @@ String prev_bufVisualization = "default";
 uint32_t prev_millis = 0;
 uint32_t multipartIndex = 0;
 
-
-
-
-
 String getLiveLights() {
   String bufVisualization = "";
   if ((millis() > prev_millis + delayMaxLimit)  ||  (prev_bufVisualization == "default")) {  // if false serve empty buffer
     for (uint16_t i = 0; i < multipartSize && i + multipartIndex * multipartSize < ledCount; i++) {
       if (i == 0) {  // add extra fields
-        bufVisualization = "{\"m\":" + String(strip.getMode()) + ", \"lc\":" + ledCount + ", \"leds\":[";
+        bufVisualization = "{\"fx\":" + String(strip.getMode()) + ", \"pal\":" + strip.getPalette() + ", \"lc\":" + ledCount + ", \"leds\":[";
       } else {
         bufVisualization += ",";
       }
@@ -56,7 +52,54 @@ String getLiveLights() {
   return String("");
 }
 
+/*
+  String getLiveLightsJson() {
+  //StaticJsonDocument<JSONlive> jsonLive;
 
+  // StaticJsonObject allocates memory on the stack, it can be
+  // replaced by DynamicJsonDocument which allocates in the heap.
+  //
+  StaticJsonDocument<JSON_OBJECT_SIZE(10)> jsonLive;
+  if ((millis() > prev_millis + delayMaxLimit)  ||  (prev_bufVisualization == "default")) {  // if false serve the old buffer
+    JsonArray leds;
+    for (uint16_t i = 0; i < multipartSize && i + multipartIndex * multipartSize < ledCount; i++) {
+      if (i == 0) {  // add extra fields
+        jsonLive["m"] = strip.getMode();
+        jsonLive["lc"] = ledCount;
+        jsonLive["mpi"] = multipartIndex;
+        leds = jsonLive.createNestedArray("leds");
+      }
+      CRGB fastled_col = strip.col_to_crgb(strip.getPixelColor(i + multipartIndex * multipartSize));
+      // create the color in hex notation
+      String col = "";
+      String bufCol = "";
+      col = "0" + String(fastled_col.red, HEX);
+      bufCol += col.substring(col.length() - 2);
+      col = "0" + String(fastled_col.green, HEX);
+      bufCol += col.substring(col.length() - 2);
+      col = "0" + String(fastled_col.blue, HEX);
+      bufCol += col.substring(col.length() - 2);
+      leds.add(bufCol);
+    }
+    prev_jsonLive = jsonLive;
+
+    // add millis since last update (maybe for future optimizations)
+    uint32_t m = millis();
+    jsonLive["mpi"] = multipartIndex;
+    jsonLive["mi"] = m - prev_millis;
+    prev_millis = m;
+    multipartIndex++;
+    if (multipartIndex * multipartSize >= ledCount) {
+      multipartIndex = 0;
+    }
+  }
+  uint32_t serJsonSize = measureJson(jsonLive);
+  char ret[serJsonSize];
+  serializeJson(jsonLive, ret[serJsonSize]);
+  return ret;
+
+  }
+*/
 
 void serveLiveView(AsyncWebServerRequest * request)
 {
