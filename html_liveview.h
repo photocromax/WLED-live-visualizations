@@ -6,13 +6,12 @@
 const char PAGE_liveView[] PROGMEM = R"=====(<!DOCTYPE html>
 <html><head><meta name="viewport" content="width=500" charset="utf-8" >
 <meta http-equiv="refresh" content="3600">
-<style>html, body {margin: 0;padding: 0;justify-content: center;}canvas {display: block;}</style>
+<style>html, body {margin: 0;padding: 0;justify-content: center;} canvas{display:block;}</style>
 <title>Live View</title>
-<body style="background-color:#333333;" >
+<body style="background-color:#333;font-family:Helvetica,Verdana,sans-serif;color:white" >
 <canvas id="liveCanvas"  width="5" height="5" style="width: 5px; height: 5px; position: absolute; top: 0px; left: 0px; right: 0px;  margin: auto;"></canvas>
+
 <script>
-
-
 
 var windowWidth = 500;
 var windowHeight = 500;
@@ -23,17 +22,18 @@ var lightPerLines=1;
 var numLights = 0; 
 var canvas ;  
 var ctx ;
-var m=-1;
+var fx=-1;
+var pal=-1;
 var mi=-1;
 var mpi=0;
 
 prev_leds = (["#000000"]);  //previous strip state
-
+host="";
 function pcm_loadJSON(cbk,cbkError){
     var httpReq = new XMLHttpRequest(); 
     httpReq.overrideMimeType("application/json");
     httpReq.addEventListener("error", cbkError, false);
-    httpReq.open("GET","/json/live",true);
+    httpReq.open("GET",host+"/json/live",true);
     httpReq.responseType="json";
     httpReq.onload=function(e) {
       var json= httpReq.response;
@@ -44,8 +44,6 @@ function pcm_loadJSON(cbk,cbkError){
     }
     httpReq.send();   
 }
-
-
 function pcm_resizeCanvas(noRedraw){
   if (!noRedraw) {
    pcm_clearCanvas(canvas);
@@ -65,7 +63,6 @@ function pcm_resizeCanvas(noRedraw){
 
 
 function pcm_clearCanvas(cnv) {
- //var ctx = canvas.getContext("2d");  
  ctx.clearRect(0,0,cnv.width,cnv.height);
   for (i = 0; i < numLights ; i++) {
        renderLight(i, "",true);
@@ -88,7 +85,6 @@ function renderLight(light, col, stroke) {
   }
   x = reverse+drawDirection*((light %% lightsPerLine) * lightSize+0.5*drawDirection);
   y = line * lightSize+0.5;
-  //var ctx = canvas.getContext("2d");
   if (!stroke){
     ctx.fillStyle = col; 
     ctx.fillRect(x+0.5, y+0.5, lightSize-1, lightSize-1); //create the square representing the light (left, top, width, height)
@@ -99,9 +95,9 @@ function renderLight(light, col, stroke) {
   }
 }
 
+
 function errorDrawLights(err){
   pcm_loadJSON(drawLights,errorDrawLights); //get actual strip state AGAIN
-  //console.log("frame reloaded");
 }
 
 function drawLights(strip) {
@@ -118,15 +114,16 @@ function drawLights(strip) {
       numLights = strip.lc;  
       pcm_resizeCanvas(false);
   }
-  else if( prev_leds==strip.leds  && m==strip.m && mpi==strip.mpi) {
+  else if( prev_leds==strip.leds && pl==strip.pl && fx==strip.fx && mpi==strip.mpi) {
     mi=0; //millis since last frame
   } else {
-    m=strip.m;  // effect mode index
+    fx=strip.fx;  // effect mode index
+    pal=strip.pal;  // palette index
     mpi=strip.mpi //multipartIndex
     mi=strip.mi; // millis since last frame
     prev_leds=strip.leds; //update previous strip state with actual state
-    pl=strip.leds.length; // part length 
-        for (i = 0; i < pl; i++) {
+    mpl=strip.leds.length; // multipart length 
+        for (i = 0; i < mpl; i++) {
        renderLight(i+mpi*multipartSize, strip.leds[i],false);
     }
   }
@@ -157,6 +154,3 @@ pcm_setup();
 </script>
 </body>
 </html>)=====";
-
-
-
