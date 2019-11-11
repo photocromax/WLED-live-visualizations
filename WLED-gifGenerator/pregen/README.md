@@ -1,4 +1,10 @@
-Subdirectories contains pre-generated gifs using 2 colors (default wled orange and its blue opposite). The strip is displayed in zigzag order
+Subdirectories contains:
+
+pre-generated FX gifs using 2 colors (default wled orange and its blue opposite). 
+
+pre-generated Palette gifs using "Palette" FX (65);
+
+The strip is displayed in zigzag order
 
 Naming convention:
 
