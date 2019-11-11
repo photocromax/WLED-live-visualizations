@@ -1,6 +1,7 @@
 /*
    Live View
 */
+#ifndef WLED_DISABLE_LIVEVIEW
 
 uint16_t fpsMaxLimit = 60;
 uint16_t delayMaxLimit = 0;//(uint16_t)(1000.0 / ((float)fpsMaxLimit*ledCount / multipartSize));
@@ -100,8 +101,10 @@ String getLiveLights() {
 
   }
 */
-
+  #ifndef WLED_DISABLE_INTERNAL_LIVEVIEW
 void serveLiveView(AsyncWebServerRequest * request)
 {
-  request->send_P(200, "text/html", PAGE_liveView, settingsProcessor);
+  request->send_P(200, "text/html", PAGE_liveView, pageProcessor);
 }
+  #endif
+#endif

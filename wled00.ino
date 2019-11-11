@@ -17,22 +17,25 @@
 
 //You are required to disable over-the-air updates:
 //#define WLED_DISABLE_OTA
-
+//#define ESP01
 //You need to choose 1-2 of these features to disable:
-//#define WLED_DISABLE_ALEXA
-//#define WLED_DISABLE_BLYNK
-//#define WLED_DISABLE_CRONIXIE
-//#define WLED_DISABLE_HUESYNC
-//#define WLED_DISABLE_INFRARED    //there is no pin left for this on ESP8266-01
+#ifdef ESP01
+  #define WLED_DISABLE_ALEXA
+  #define WLED_DISABLE_BLYNK
+  #define WLED_DISABLE_CRONIXIE
+  #define WLED_DISABLE_HUESYNC
+  #define WLED_DISABLE_INFRARED    //there is no pin left for this on ESP8266-01
+  //#define WLED_DISABLE_INTERNAL_LIVEVIEW
+#endif
 //#define WLED_DISABLE_MOBILE_UI
-
+//#define WLED_DISABLE_LIVEVIEW
 
 #define WLED_DISABLE_FILESYSTEM    //SPIFFS is not used by any WLED feature yet
 //#define WLED_ENABLE_FS_SERVING   //Enable sending html file from SPIFFS before serving progmem version
 //#define WLED_ENABLE_FS_EDITOR    //enable /edit page for editing SPIFFS content. Will also be disabled with OTA lock
 
 //to toggle usb serial debug (un)comment the following line
-#define WLED_DEBUG
+//#define WLED_DEBUG
 
 
 //library inclusions
@@ -47,7 +50,9 @@
  #include "esp_wifi.h"
  #include <ESPmDNS.h>
  #include <AsyncTCP.h>
- #include "SPIFFS.h"
+ #ifndef WLED_DISABLE_FILESYSTEM
+   #include "SPIFFS.h"
+ #endif
 #endif
 
 #include <ESPAsyncWebServer.h>
@@ -57,7 +62,9 @@
 #ifndef WLED_DISABLE_OTA
  #include <ArduinoOTA.h>
 #endif
-#include <SPIFFSEditor.h>
+#ifndef WLED_DISABLE_FILESYSTEM
+  #include <SPIFFSEditor.h>
+#endif
 #include "src/dependencies/time/Time.h"
 #include "src/dependencies/time/TimeLib.h"
 #include "src/dependencies/timezone/Timezone.h"
@@ -80,10 +87,11 @@
 #include "html_settings.h"
 #include "html_other.h"
 #include "FX.h"
-#include "ir_codes.h"
 
 #ifndef WLED_DISABLE_LIVEVIEW
-  #include "html_liveview.h"
+  #ifndef WLED_DISABLE_INTERNAL_LIVEVIEW
+    #include "html_liveview.h"
+  #endif
 #endif
 
 #if IR_PIN < 0
@@ -92,12 +100,14 @@
  #endif
 #endif
 
+
 #ifdef ARDUINO_ARCH_ESP32
  /*#ifndef WLED_DISABLE_INFRARED
   #include <IRremote.h>
  #endif*/ //there are issues with ESP32 infrared, so it is disabled for now
 #else
  #ifndef WLED_DISABLE_INFRARED
+  #include "ir_codes.h"
   #include <IRremoteESP8266.h>
   #include <IRrecv.h>
   #include <IRutils.h>
@@ -263,6 +273,7 @@ bool aOtaEnabled = true;                      //ArduinoOTA allows easy updates d
 
 //LiveView setting
 uint32_t multipartSize = 120;
+uint8_t lightSize = 16;
 
 
 uint16_t userVar0 = 0, userVar1 = 0;
@@ -534,10 +545,13 @@ void loop() {
 
   yield();
   handleIO();
+#ifndef WLED_DISABLE_INFRARED
   handleIR();
+#endif
   handleNetworkTime();
+#ifndef WLED_DISABLE_ALEXA
   handleAlexa();
-
+#endif
   handleOverlays();
   if (doSendHADiscovery) sendHADiscoveryMQTT();
   yield();
@@ -551,9 +565,12 @@ void loop() {
     #endif
     handleNightlight();
     yield();
-
-    handleHue();
-    handleBlynk();
+    #ifndef WLED_DISABLE_HUESYNC
+      handleHue();
+    #endif
+    #ifndef WLED_DISABLE_BLYNK
+      handleBlynk();
+    #endif
 
     yield();
     if (!offMode) strip.service();

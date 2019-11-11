@@ -243,7 +243,11 @@ void serveJson(AsyncWebServerRequest* request)
     return;
   }
   else if (url.indexOf("live")   > 0) {
-    request->send_P(200, "application/json", getLiveLights().c_str());
+    #ifndef WLED_DISABLE_LIVEVIEW
+      request->send_P(200, "application/json", getLiveLights().c_str());
+    #else
+      request->send(  501, "application/json", "{\"error\":\"Not implemented\"}");
+    #endif
     return;
   }else if (url.length() > 6) { //not just /json
     request->send(  501, "application/json", "{\"error\":\"Not implemented\"}");

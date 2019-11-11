@@ -97,11 +97,13 @@ void initServer()
   server.on("/json", HTTP_GET, [](AsyncWebServerRequest *request){
     serveJson(request);
   });
-  
-  server.on("/liveview", HTTP_GET, [](AsyncWebServerRequest *request){
-    serveLiveView(request);
-  });
-
+  #ifndef WLED_DISABLE_LIVEVIEW
+    #ifndef WLED_DISABLE_INTERNAL_LIVEVIEW
+      server.on("/liveview", HTTP_GET, [](AsyncWebServerRequest *request){
+      serveLiveView(request);
+      });
+    #endif
+  #endif
   AsyncCallbackJsonWebHandler* handler = new AsyncCallbackJsonWebHandler("/json", [](AsyncWebServerRequest *request, JsonObject root) {
     if (root.isNull()){request->send(500, "application/json", "{\"error\":\"Parsing failed\"}"); return;}
     if (deserializeState(root)) { serveJson(request); return; } //if JSON contains "v" (verbose response)
@@ -339,7 +341,12 @@ String settingsProcessor(const String& var)
     return String(buf);
   }
   if (var == "SCSS") return String(FPSTR(PAGE_settingsCss));
+  return String();
+}
+String pageProcessor(const String& var)
+{
   if (var == "MPS") return String(multipartSize);
+  if (var == "LS") return String(lightSize);
   return String();
 }
 
