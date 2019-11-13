@@ -4,7 +4,7 @@
 
 // Live View
 const char PAGE_liveView[] PROGMEM = R"=====(<!DOCTYPE html>
-<html><head><meta name="viewport" content="width=500" charset="utf-8" >
+<html><head><meta name="viewport" content="width=100, initial-scale=1" charset="utf-8" >
 <meta http-equiv="refresh" content="3600">
 <style>html, body {margin: 0;padding: 0} canvas{display:block;}</style>
 <title>Live View</title>
@@ -74,6 +74,18 @@ function isOdd(n) {
 }
 
 function renderLight(light, col, stroke) {
+  gamma=2.2;
+  r=parseInt(Math.pow(parseInt("0x"+col.substring(1,3)) / 255, gamma) * 255);
+  r="0"+r.toString(16);
+  r=r.substring(r.length-2);
+  g=parseInt(Math.pow(parseInt("0x"+col.substring(3,5)) / 255, gamma) * 255);
+  g="0"+g.toString(16);
+  g=g.substring(g.length-2);
+  b=parseInt(Math.pow(parseInt("0x"+col.substring(5,7)) / 255, gamma) * 255);
+  b="0"+b.toString(16);
+  b=b.substring(b.length-2);
+  colGamma="#"+r+g+b;
+
   line=Math.floor(light / lightsPerLine);
     if (isOdd(line)){
       reverse=lightsPerLine*lightSize-lightSize;
@@ -85,7 +97,7 @@ function renderLight(light, col, stroke) {
   x = reverse+drawDirection*((light %% lightsPerLine) * lightSize+0.5*drawDirection);
   y = line * lightSize+0.5;
   if (!stroke){
-    ctx.fillStyle = col; 
+    ctx.fillStyle = colGamma; //col; 
     ctx.fillRect(x+0.5, y+0.5, lightSize-1, lightSize-1); //create the square representing the light (left, top, width, height)
   } else {
     ctx.strokeStyle = bgColor;

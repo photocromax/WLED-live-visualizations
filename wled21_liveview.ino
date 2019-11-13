@@ -9,6 +9,12 @@ uint16_t delayMaxLimit = 0;//(uint16_t)(1000.0 / ((float)fpsMaxLimit*ledCount / 
 String prev_bufVisualization = "default";
 uint32_t prev_millis = 0;
 uint32_t multipartIndex = 0;
+uint32_t maxCacheLife = 1000;
+
+String gammaCorrectHex(uint8_t col) {
+  String sCol = "0" + String((uint8_t)(pow(((float)col  / 255), 2.2) * 255), HEX);
+  return sCol.substring(sCol.length() - 2);
+}
 
 String getLiveLights() {
   String bufVisualization = "";
@@ -25,15 +31,21 @@ String getLiveLights() {
       //bufVisualization += strip.getPixelColor(i);
       // create the color in hex notation
       bufVisualization += "#";
-      col = "0" + String(fastled_col.red, HEX);
+      
+      col = "0" + String(fastled_col.red, HEX);     
+      //col = gammaCorrectHex(fastled_col.red);
       bufVisualization += col.substring(col.length() - 2);
+      
       col = "0" + String(fastled_col.green, HEX);
+      //col = gammaCorrectHex(fastled_col.green);
       bufVisualization += col.substring(col.length() - 2);
+
       col = "0" + String(fastled_col.blue, HEX);
+      //col = gammaCorrectHex(fastled_col.blue);
       bufVisualization += col.substring(col.length() - 2);
       bufVisualization += "\"";
     }
-    if (bufVisualization != prev_bufVisualization || ledCount > multipartSize ) { //if there is a new strip state or strip is longer than multipartiSize
+    if (bufVisualization != prev_bufVisualization || ledCount > multipartSize || millis()>prev_millis+maxCacheLife ) { //if there is a new strip state or strip is longer than multipartiSize
       prev_bufVisualization = bufVisualization;  //update the previous buffer
       if (ledCount > multipartSize ) {
         multipartIndex++;

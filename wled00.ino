@@ -17,7 +17,9 @@
 
 //You are required to disable over-the-air updates:
 //#define WLED_DISABLE_OTA
-//#define ESP01
+
+
+#define ESP01
 //You need to choose 1-2 of these features to disable:
 #ifdef ESP01
   #define WLED_DISABLE_ALEXA
@@ -25,9 +27,9 @@
   #define WLED_DISABLE_CRONIXIE
   #define WLED_DISABLE_HUESYNC
   #define WLED_DISABLE_INFRARED    //there is no pin left for this on ESP8266-01
+  #define WLED_DISABLE_MOBILE_UI
   //#define WLED_DISABLE_INTERNAL_LIVEVIEW
 #endif
-//#define WLED_DISABLE_MOBILE_UI
 //#define WLED_DISABLE_LIVEVIEW
 
 #define WLED_DISABLE_FILESYSTEM    //SPIFFS is not used by any WLED feature yet
