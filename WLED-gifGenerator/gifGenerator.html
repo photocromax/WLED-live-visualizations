@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head><meta name="viewport" content="width=100" charset="utf-8" >
+<html><head><meta name="viewport" content="width=50" charset="utf-8" >
 <script src="/gif.js/gif.js"></script>
 <style>html, body {margin: 0;padding: 0;justify-content: center;}canvas {display: block;}</style>
 <title>WLED Gif Generator</title>
@@ -8,11 +8,11 @@
 <script>
 
 
-host="http://<wled ip>";
+host="http://<your WLED IP>";
 
 var windowWidth = 500;
 var windowHeight = 500;
-var lightSize = 10; // light box size
+var lightSize = 8; // light box size
 var lines=0;
 var multipartSize=120;  //refer to wled21_liveview multipartSize global variable. (it has to be the same value)
 var lightPerLines=1;
@@ -33,9 +33,9 @@ var play=true;
 var fxCount=83;
 var fx=0;
 var palCount=50;
-var pal=0;
+var pal=-1;
 gif = null;
-gifDuration=20000;
+gifDuration=10000;
 quality=10; //gif quality [1-30] (1 is better)
 gifTimeRemaining=gifDuration;
 prev_mi=0;
@@ -58,14 +58,11 @@ function pcm_loadJSON(cbk,cbkError){
 
 
 function pcm_resizeCanvas(noRedraw){
-  if (!noRedraw) {
-   pcm_clearCanvas(canvas);
-  }
-  lightsPerLine = Math.floor(windowWidth / lightSize ); 
+  if (!noRedraw) pcm_clearCanvas(canvas);
+  lightsPerLine = Math.floor((windowWidth-1) / lightSize ); 
+  if (numLights<lightsPerLine && numLights>0) lightsPerLine=numLights; 
   lines = Math.ceil(numLights / lightsPerLine)
-  if (lines == 0) {
-    lines=1;
-  }  
+  if (lines == 0) lines=1; 
   w = lightsPerLine*lightSize+1;
   h = lines*lightSize+1;
   canvas.width=w;
@@ -88,6 +85,18 @@ function isOdd(n) {
 }
 
 function renderLight(light, col, stroke) {
+  gamma=2.2;
+  r=parseInt(Math.pow(parseInt("0x"+col.substring(1,3)) / 255, gamma) * 255);
+  r="0"+r.toString(16);
+  r=r.substring(r.length-2);
+  g=parseInt(Math.pow(parseInt("0x"+col.substring(3,5)) / 255, gamma) * 255);
+  g="0"+g.toString(16);
+  g=g.substring(g.length-2);
+  b=parseInt(Math.pow(parseInt("0x"+col.substring(5,7)) / 255, gamma) * 255);
+  b="0"+b.toString(16);
+  b=b.substring(b.length-2);
+  colGamma="#"+r+g+b;
+  
   line=Math.floor(light / lightsPerLine);
     if (isOdd(line)){
       reverse=lightsPerLine*lightSize-lightSize;
@@ -99,7 +108,7 @@ function renderLight(light, col, stroke) {
   x = reverse+drawDirection*((light % lightsPerLine) * lightSize+0.5*drawDirection);
   y = line * lightSize+0.5;
   if (!stroke){
-    ctx.fillStyle = col; 
+    ctx.fillStyle = colGamma; //col;
     ctx.fillRect(x+0.5, y+0.5, lightSize-1, lightSize-1); //create the square representing the light (left, top, width, height)
   } else {
     ctx.strokeStyle = "#333333";
@@ -116,6 +125,7 @@ function errorDrawLights(err){
 }
 
 function drawLights(strip) {
+/*
   try {
     if (strip === null) throw "empty json";
   }
@@ -124,6 +134,7 @@ function drawLights(strip) {
     //errorDrawLights();
     console.log(err);
   }
+  */
   if (strip !== null) { 
   if ( numLights != strip.lc) {
       numLights = strip.lc;  
@@ -132,7 +143,7 @@ function drawLights(strip) {
   else if( prev_leds==strip.leds  && m==strip.fx && pl==strip.pal && mpi==strip.mpi) {
     mi=0; //millis since last frame
   } else {
-    m=strip.m;  // effect mode index
+    m=strip.fx;  // effect mode index
     pl=strip.pal;  //palette index
 	mpi=strip.mpi //multipartIndex
     mi=strip.mi; // millis since last frame
@@ -165,7 +176,7 @@ function drawLights(strip) {
 }
 
 function getWindowSize(){
-  windowWidth = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)-30;
+  windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
   windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 }
 
@@ -205,10 +216,10 @@ function cl() {
      var a = document.createElement("a");
 	 a.style.display = "none";
      a.href= URL.createObjectURL(blob);
-	 if (pal==0) {
+	 if (pal==-1) {
 	    fn="FX_"+m+".gif";
 	 } else {
-	    fn="PAL_"+pal+".gif";	 
+	    fn="PAL_"+pl+".gif";	 
 	 }
 	 a.download=fn;
      document.body.appendChild(a);
@@ -218,15 +229,15 @@ function cl() {
 	 gif=null;
 	 delete gif;
 	 setTimeout(function(){delete blob;},2000);
-	 if (pal==0) {
+	 if (pal==-1) {
 	    fx++;
 	 } else {
 	    pal++;
 	 }
-	 if (fx<fxCount && pal==0) {
+	 if (fx<fxCount && pal==-1) {
 		postToState("fx",fx);
 		setTimeout(cl,gifDuration);  //wait the canvas is renewed with new effect
-	 }else if (pal<palCount ) {
+	 }else if (pal<palCount && pal!=-1) {
 		postToState("pal",pal);
 		setTimeout(cl,gifDuration);  //wait the canvas is renewed with new effect
 	 } else {
@@ -247,13 +258,13 @@ function pp() {
     console.log("Liveview Paused");
   }
 }
-fx=1;
-pal=1;
-if (pal!=0) fx=50; //40 scanner, 50 out out
+fx=0;
+pal=0;
+if (pal!=-1) fx=65; //65 palette
 postToState("fx",fx);
-postToState("pal",pal);
+if (pal==-1) postToState("pal",0);
 pcm_setup();
 </script>
-<br/><input type="button" value="Generate GIFs" onclick="cl()">&nbsp;<input type="button" value="Play/Pause" onclick="pp()"><br/>
+<br/><input type="button" value="Gen GIFs" onclick="cl()">&nbsp;<input type="button" value=">/||" onclick="pp()"><br/>
 </body>
 </html>
