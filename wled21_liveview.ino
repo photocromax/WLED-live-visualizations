@@ -19,7 +19,7 @@ String gammaCorrectHex(uint8_t col) {
 String getLiveLights() {
   String bufVisualization = "";
   if ((millis() > prev_millis + delayMaxLimit)  ||  (prev_bufVisualization == "default")) {  // if false serve empty buffer
-    for (uint16_t i = 0; i < multipartSize && i + multipartIndex * multipartSize < ledCount; i++) {
+    for (uint16_t i = 0; (i < multipartSize) && (i + multipartIndex * multipartSize < ledCount); i++) {
       if (i == 0) {  // add extra fields
         bufVisualization = "{\"fx\":" + String(strip.getMode()) + ", \"pal\":" + strip.getPalette() + ", \"lc\":" + ledCount + ", \"leds\":[";
       } else {
@@ -47,15 +47,17 @@ String getLiveLights() {
     }
     if (bufVisualization != prev_bufVisualization || ledCount > multipartSize || millis()>prev_millis+maxCacheLife ) { //if there is a new strip state or strip is longer than multipartiSize
       prev_bufVisualization = bufVisualization;  //update the previous buffer
+      bufVisualization += "], \"mpi\":" + String(multipartIndex) + "";  
       if (ledCount > multipartSize ) {
         multipartIndex++;
         if (multipartIndex * multipartSize >= ledCount) {
-          multipartIndex = 0;
+          multipartIndex = 0;  
         }
+      } else {
+        multipartIndex = 0;
       }
-      // add millis since last update (maybe for future optimizations)
+       // add millis since last update (maybe for future optimizations)
       uint32_t m = millis();
-      bufVisualization += "], \"mpi\":" + String(multipartIndex) + "";
       bufVisualization += ", \"mi\":" + String(m - prev_millis);
       bufVisualization += "}";
       prev_millis = m;
