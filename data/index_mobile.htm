@@ -593,13 +593,13 @@ function highlight(hurl)
       if(i.sel) {selc = ind; break;} ind++;
     }
     var i=s.seg[selc];
-    cpick.color.rgb = { r: i.col[0][0], g: i.col[0][1], b: i.col[0][2]};
-    var wv = i.col[0][3];
-    if (wv != null) {
-      d.getElementById("whis").value = wv;
-    } else {
-      d.getElementsByClassName("whs")[0].style.display = "none";
-    }
+    //cpick.color.rgb = { r: i.col[0][0], g: i.col[0][1], b: i.col[0][2]};
+    //var wv = i.col[0][3];
+    //if (wv != null) {
+    //  d.getElementById("whis").value = wv;
+    //} else {
+    //  d.getElementsByClassName("whs")[0].style.display = "none";
+    //}
 	selectId("fx"+fx,"fx"+i.fx);
 	fx=i.fx;
 	selectId("pal"+pal,"pal"+i.pal);
