@@ -28,6 +28,8 @@ var pal=-1;
 var mi=-1;
 var mpi=0;
 
+var play=true;
+
 prev_leds = (["#000000"]);  //previous strip state
 host="";
 function pcm_loadJSON(cbk,cbkError){
@@ -58,6 +60,11 @@ function pcm_resizeCanvas(noRedraw){
   canvas.style.width=w+"px";
   canvas.style.height=h+"px";
   canvas.style.left=Math.floor((windowWidth-w)/2)+"px";
+  var iFrame=window.parent.document.getElementById("lvf");
+  if (iFrame != null) {
+    iFrame.style.height=h+"px";
+    iFrame.height=h+"px";
+  }
 }
 
 
@@ -137,13 +144,15 @@ if (strip != null) {
     mi=strip.mi; // millis since last frame
     prev_leds=strip.leds; //update previous strip state with actual state
     mpl=strip.leds.length; // multipart length 
-        for (i = 0; i < mpl; i++) {
+    for (i = 0; i < mpl; i++) {
        renderLight(i+mpi*multipartSize, strip.leds[i],false);
     }
   }
 }
   delete strip;  // local variable to the GC
-  pcm_loadJSON(drawLights,errorDrawLights);  //request new  strip state
+  if (play){  
+    pcm_loadJSON(drawLights,errorDrawLights);  //request new  strip state
+  }
 }
 
 function getWindowSize(){
@@ -155,6 +164,8 @@ function windowResize(){
    getWindowSize();
    pcm_resizeCanvas(false);  
  }  
+
+
 
 function pcm_setup() {
   canvas = document.getElementById("liveCanvas");  

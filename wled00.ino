@@ -273,9 +273,6 @@ bool otaLock = false;                         //prevents OTA firmware updates wi
 bool wifiLock = false;                        //prevents access to WiFi settings when OTA lock is enabled
 bool aOtaEnabled = true;                      //ArduinoOTA allows easy updates directly from the IDE. Careful, it does not auto-disable when OTA lock is on
 
-//LiveView setting
-uint32_t multipartSize = 120;
-uint8_t lightSize = 16;
 
 
 uint16_t userVar0 = 0, userVar1 = 0;
@@ -490,6 +487,13 @@ WS2812FX strip = WS2812FX();
  #endif
  #include "SPIFFSEditor.h"
 #endif
+
+//liveView setting
+uint32_t multipartSize = 120;
+uint8_t lightSize = 16;
+bool playLiveViewDefault=true;
+bool  playLiveView=playLiveViewDefault;
+
 
 
 //function prototypes

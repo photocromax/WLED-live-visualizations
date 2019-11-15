@@ -181,6 +181,7 @@ void serializeInfo(JsonObject root)
   root["live"] = realtimeActive;
   root["fxcount"] = strip.getModeCount();
   root["palcount"] = strip.getPaletteCount();
+  root["liveview"] = playLiveView;
   #ifdef ARDUINO_ARCH_ESP32
   root["arch"] = "esp32";
   root["core"] = ESP.getSdkVersion();
