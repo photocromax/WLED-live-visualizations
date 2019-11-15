@@ -313,22 +313,22 @@
 </div>
 </div>
 <p style="text-align:center;">Presets</p>
-<div class="cC" onclick="ps(1);">1</div>
-<div class="cC" onclick="ps(2);">2</div>
-<div class="cC" onclick="ps(3);">3</div>
-<div class="cC" onclick="ps(4);">4</div><br>
-<div class="cC" onclick="ps(5);">5</div>
-<div class="cC" onclick="ps(6);">6</div>
-<div class="cC" onclick="ps(7);">7</div>
-<div class="cC" onclick="ps(8);">8</div><br>
-<div class="cC" onclick="ps(9);">9</div>
-<div class="cC" onclick="ps(10);">10</div>
-<div class="cC" onclick="ps(11);">11</div>
-<div class="cC" onclick="ps(12);">12</div><br>
-<div class="cC" onclick="ps(13);">13</div>
-<div class="cC" onclick="ps(14);">14</div>
-<div class="cC" onclick="ps(15);">15</div>
-<div class="cC" onclick="ps(16);">16</div>
+<div class="cC" id="ps1" onclick="ps(1);">1</div>
+<div class="cC" id="ps2" onclick="ps(2);">2</div>
+<div class="cC" id="ps3" onclick="ps(3);">3</div>
+<div class="cC" id="ps4" onclick="ps(4);">4</div><br>
+<div class="cC" id="ps5" onclick="ps(5);">5</div>
+<div class="cC" id="ps6" onclick="ps(6);">6</div>
+<div class="cC" id="ps7" onclick="ps(7);">7</div>
+<div class="cC" id="ps8" onclick="ps(8);">8</div><br>
+<div class="cC" id="ps9" onclick="ps(9);">9</div>
+<div class="cC" id="ps10" onclick="ps(10);">10</div>
+<div class="cC" id="ps11" onclick="ps(11);">11</div>
+<div class="cC" id="ps12" onclick="ps(12);">12</div><br>
+<div class="cC" id="ps13" onclick="ps(13);">13</div>
+<div class="cC" id="ps14" onclick="ps(14);">14</div>
+<div class="cC" id="ps15" onclick="ps(15);">15</div>
+<div class="cC" id="ps16" onclick="ps(16);">16</div>
 </div>
 <div class="row segment" style="height:50px; width:280px;">
 <p style="text-align:right;margin-bottom:5px;">Cycle Mode</p>
@@ -351,7 +351,7 @@
 </div>
 <p id="CDurL" style="margin-bottom: -4px;">Color Transition</p><input id="cycts" max="65000" min="0" step="50" type="range" value="500">
 </div>
-<iframe id="lv" scrolling="no" src="/liveview" style="border-style:none;width:100%;display:block;left:0;top:0;height:55px;"></iframe>
+<iframe id="lvf" scrolling="no" src="/liveview" style="border-style:none;width:100%;display:block;height:55px;"></iframe>
 	
 <p>FX Mode</p>
 <ul class="mode" id="fxl" style="margin-top:20px;">
@@ -380,6 +380,8 @@ var nla=false;
 var lbri=222;
 var fx=-1;
 var pal=-1;
+var pst=0;
+
 //Feedback
 feedback = function() {
 	var e = d.body;
@@ -444,10 +446,10 @@ function uB()
 		d.getElementById('tnl').style.filter = "brightness(100%)";
 	}
 }
-function selectLi(li,ind) {
-    el=document.getElementById(li)
+function selectId(last,current) {
+    el=document.getElementById(last)
 	if (el!= null) el.style=null;
-	el=document.getElementById(ind)
+	el=document.getElementById(current)
 	if (el!= null) el.style="border:2px solid orange;color:orange;border-color:orange"
 }
 function X(ind)
@@ -531,6 +533,11 @@ function GIO()
     var name = json.info.name;
     if (json.info.live) name = "(Live) " + name;
     e3.innerHTML = name;
+	var liveview = json.info.liveview;
+    if (!liveview) {
+		d.getElementById("lvf").style.display="none";
+		d.getElementById("lvf").src="";
+	}
     var s = json.state;
     d.getElementById("bris").value= (s.on)?s.bri:0;
     nla=s.nl.on;
@@ -551,10 +558,9 @@ function GIO()
     }
     d.getElementById('sxs').value = i.sx;
     d.getElementById('ixs').value = i.ix;
-	selectLi("fx"+fx,"fx"+i.fx);
 	fx=i.fx;
-	selectLi("pal"+pal,"pal"+i.pal);
 	pal=i.pal;
+	highlight("");
     recv =1;
     uB();
   })
@@ -563,26 +569,66 @@ function GIO()
   })
 }
 
+function highlight(hurl)
+{
+  e="Error highlighting!";
+  e3 = d.getElementsByClassName("desc")[0];
+  fetch('/json')
+  .then(res => {
+    if (!res.ok) {
+       e3.innerHTML=e;
+    }
+    return res.json();
+  })
+  .then(json => {
+    recv =0;
+    var s = json.state;
+    d.getElementById("bris").value= (s.on)?s.bri:0;
+    nla=s.nl.on;
+    d.getElementById('myoos-n').checked = s.udpn.send;
+    d.getElementById('myoos-cy').checked = (s.pl >= 0);
+    var selc=0; var ind=0;
+    for (i in s.seg)
+    {
+      if(i.sel) {selc = ind; break;} ind++;
+    }
+    var i=s.seg[selc];
+    cpick.color.rgb = { r: i.col[0][0], g: i.col[0][1], b: i.col[0][2]};
+    var wv = i.col[0][3];
+    if (wv != null) {
+      d.getElementById("whis").value = wv;
+    } else {
+      d.getElementsByClassName("whs")[0].style.display = "none";
+    }
+	selectId("fx"+fx,"fx"+i.fx);
+	fx=i.fx;
+	selectId("pal"+pal,"pal"+i.pal);
+	pal=i.pal;
+	var pos = hurl.indexOf("/win&PL=");
+	//console.log(pos+" "+pst+ " "+hurl);
+	var newPst=0;
+	if (pos > -1) {
+	  newPst=hurl.substring(pos+8);
+	  selectId("ps"+pst,"ps"+newPst);
+	  //console.log(newPst);
+	  pst=newPst;
+	} else {
+	  selectId("ps"+pst,"ps"+newPst);
+	}
+    recv =1;
+    uB();
+  })
+  .catch(function () {
+    e3.innerHTML=e;
+  })
+}
+
+
 function EC(eurl){
 	uB();
-	/*
-	var u=eurl.indexOf("FX=");
-	if (u>-1) {
-	  ind=eurl.substring(u+3);
-	  console.log("fx"+ind);	  
-	  selectLi("fx"+fx,"fx"+ind);
-	  fx=ind;
-	}
-	u=eurl.indexOf("FP=");
-	if (u>-1) {
-	  ind=eurl.substring(u+3);
-	  console.log("pal"+ind);
-	  selectLi("pal"+pal,"pal"+ind);
-	  pal=ind;
-	}
-	*/
+	highlight(eurl);
 	d.getElementById('stf').src = eurl;
-	GIO();	   
+	setTimeout(highlight(eurl),200);	   
 }
 function pC(col) {
  var pc = iro.Color.parseHexStr(col);

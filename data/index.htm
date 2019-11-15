@@ -43,8 +43,10 @@
 			CV(0);
 			setInterval(GIO, 5000);
 			GIO();
-      setTimeout(function(){fillfx(0);}, 200);
+	  setTimeout(function(){fillfx(0);}, 200);
       setTimeout(function(){fillfx(1);}, 500);
+	  setTimeout(function(){playLiveView();},800);
+      
 		}
 		function GIO()
 		{
@@ -390,6 +392,33 @@
           el.innerHTML=e;
         })
     }
+	
+	function playLiveView()
+    {
+      e="<option>Error loading live view!</option>";
+      //el = fp?Cf.FP:Cf.TX;
+      fetch('/json/info')
+        .then(res => {
+          if (!res.ok) {
+             el.innerHTML=e;
+          }
+          return res.json();
+        })
+        .then(json => {
+			var liveview = json.liveview;
+			if (!liveview) {
+			d.getElementById("lvf").style.display="none";
+			d.getElementById("lvf").src="";
+			}
+        })
+        .catch(function () {
+          el.innerHTML=e;
+        })
+    }
+	
+	
+	
+	
 	</script>
 	<style>
 		:root {
@@ -606,7 +635,7 @@
 		<svg id="stb" onclick="TgS()"><use xlink:href="#lnr-cog"></use></svg>
 	</div>
 	<div id="cdB" class="ctrl_box">
-	<iframe id="lv" scrolling="no" src="/liveview" style="position:sticky;transform:none;margin:auto;border-style:none;width:100%;display:block;left:0;top:0;height:25px;"></iframe>
+	<iframe id="lvf" scrolling="no" src="/liveview" style="position:sticky;transform:none;margin:auto;border-style:none;width:100%;display:block;left:0;top:0;height:25px;"></iframe>
 		<form id="form_c" name="Cf">
 			<br>
 			<div id="slA" class="sl">
