@@ -19,7 +19,7 @@
 //#define WLED_DISABLE_OTA
 
 
-#define ESP01
+//#define ESP01
 //You need to choose 1-2 of these features to disable:
 #ifdef ESP01
   #define WLED_DISABLE_ALEXA
