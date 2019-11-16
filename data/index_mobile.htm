@@ -313,22 +313,9 @@
 </div>
 </div>
 <p style="text-align:center;">Presets</p>
-<div class="cC" id="ps1" onclick="ps(1);">1</div>
-<div class="cC" id="ps2" onclick="ps(2);">2</div>
-<div class="cC" id="ps3" onclick="ps(3);">3</div>
-<div class="cC" id="ps4" onclick="ps(4);">4</div><br>
-<div class="cC" id="ps5" onclick="ps(5);">5</div>
-<div class="cC" id="ps6" onclick="ps(6);">6</div>
-<div class="cC" id="ps7" onclick="ps(7);">7</div>
-<div class="cC" id="ps8" onclick="ps(8);">8</div><br>
-<div class="cC" id="ps9" onclick="ps(9);">9</div>
-<div class="cC" id="ps10" onclick="ps(10);">10</div>
-<div class="cC" id="ps11" onclick="ps(11);">11</div>
-<div class="cC" id="ps12" onclick="ps(12);">12</div><br>
-<div class="cC" id="ps13" onclick="ps(13);">13</div>
-<div class="cC" id="ps14" onclick="ps(14);">14</div>
-<div class="cC" id="ps15" onclick="ps(15);">15</div>
-<div class="cC" id="ps16" onclick="ps(16);">16</div>
+<div id="psDiv">
+Loading...
+</div>
 </div>
 <div class="row segment" style="height:50px; width:280px;">
 <p style="text-align:right;margin-bottom:5px;">Cycle Mode</p>
@@ -381,6 +368,7 @@ var lbri=222;
 var fx=-1;
 var pal=-1;
 var pst=0;
+var liveViewEnabled=true;
 
 //Feedback
 feedback = function() {
@@ -513,6 +501,7 @@ function GIO()
   e1 = d.getElementById('fxl');
   e2 = d.getElementById('fpl');
   e3 = d.getElementsByClassName("desc")[0];
+  e4 = d.getElementById('psDiv');
   fetch('/json')
   .then(res => {
     if (!res.ok) {
@@ -521,22 +510,25 @@ function GIO()
     return res.json();
   })
   .then(json => {
-    var x="",y="";
+    var x="",y="",z="";
     for (i in json.effects) {
       x += "<li id=\"fx"+i+"\" onclick=\"X("+i+")\">"+json.effects[i]+"</li>";
     }
     for (i in json.palettes) {
       y += "<li id=\"pal"+i+"\" onclick=\"P("+i+")\">"+json.palettes[i]+"</li>";
     }
-    e1.innerHTML=x; e2.innerHTML=y;
+	for (i=1;i<=16;i++) {
+      z += "<div class=\"cC\" id=\"ps"+i+"\" onclick=\"ps("+i+");\">"+i+"</div>";
+	  if ((i % 4 == 0) && (i<16)) z+="<br>";
+    }
+    e1.innerHTML=x; e2.innerHTML=y; e4.innerHTML=z;
     recv =0;
     var name = json.info.name;
     if (json.info.live) name = "(Live) " + name;
     e3.innerHTML = name;
-	var liveview = json.info.liveview;
-    if (!liveview) {
-		d.getElementById("lvf").style.display="none";
-		d.getElementById("lvf").src="";
+	liveViewEnabled = json.info.liveview;
+    if (!liveViewEnabled) {
+		liveViewSwitch(false)
 	}
     var s = json.state;
     d.getElementById("bris").value= (s.on)?s.bri:0;
@@ -647,13 +639,15 @@ function tP(){
 nla=false;
 if (d.getElementById('bris').value > 0)
 {
-lbri = d.getElementById('bris').value;
-d.getElementById('bris').value = 0; 
-EC('/win&T=0');
+  lbri = d.getElementById('bris').value;
+  d.getElementById('bris').value = 0; 
+  liveViewSwitch(false);
+  EC('/win&T=0');
 }else
 {
-d.getElementById('bris').value = lbri;
-EC('/win&T=1'); 
+  d.getElementById('bris').value = lbri;
+  liveViewSwitch(true);
+  EC('/win&T=1'); 
 }
 }
 function tN(){
@@ -680,6 +674,21 @@ var displayElement = pr.getElementsByClassName("rangeValues")[0];
    displayElement.innerHTML = s1 + " - " + s2;
 if(!fs)EC('/win&P1=' + s1 + '&P2=' + s2);
 }
+function liveViewSwitch(on){
+		lvf=d.getElementById("lvf");
+		if (lvf != null) {
+			if (on  && liveViewEnabled) {
+				lvf.style.display="block";
+				lvf.src="/liveview";				
+			} else {
+				lvf.style.display="none";
+				lvf.src="";
+				lvf.height="0px";
+				lvf.style.height="0px";
+			}
+		}
+}
+
 </script>
 </body>
 </html>

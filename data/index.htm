@@ -18,12 +18,13 @@
 		var nState = 0;
 		var cv=0;
 		var lm=0;
-    var fxi=0;
-    var fpi=0;
-    var fxn=1;
+		var fxi=0;
+		var fpi=0;
+		var fxn=1;
 		aC="";
 		bC="";
 		dC="";
+		var liveViewEnabled=true;
 		
 		function gId(s) //abbrev
 		{
@@ -43,10 +44,9 @@
 			CV(0);
 			setInterval(GIO, 5000);
 			GIO();
-	  setTimeout(function(){fillfx(0);}, 200);
-      setTimeout(function(){fillfx(1);}, 500);
-	  setTimeout(function(){playLiveView();},800);
-      
+			setTimeout(function(){fillfx(0);}, 200);
+			setTimeout(function(){fillfx(1);}, 500);
+			setTimeout(function(){playLiveView();},800);
 		}
 		function GIO()
 		{
@@ -200,14 +200,16 @@
 			fmr.style.fill=(Cf.TX.selectedIndex<1)?aC:dC;
 		}
 		function TgT()
-		{
+		{   
 			if (Cf.SA.value > 0)
 			{
 				resp += "&T=0";
 				Cf.SA.value = 0;
+				liveViewSwitch(false);				
 			} else
 			{
 				resp += "&T=2";
+				liveViewSwitch(true);
 			}
 			UV();
 			GIO();
@@ -396,7 +398,6 @@
 	function playLiveView()
     {
       e="<option>Error loading live view!</option>";
-      //el = fp?Cf.FP:Cf.TX;
       fetch('/json/info')
         .then(res => {
           if (!res.ok) {
@@ -405,16 +406,28 @@
           return res.json();
         })
         .then(json => {
-			var liveview = json.liveview;
-			if (!liveview) {
-			d.getElementById("lvf").style.display="none";
-			d.getElementById("lvf").src="";
-			}
+			liveViewEnabled = json.liveview;
+			if (!liveViewEnabled) liveViewSwitch(false)
         })
         .catch(function () {
           el.innerHTML=e;
         })
     }
+	
+	function liveViewSwitch(on){
+		lvf=d.getElementById("lvf");
+		if (lvf != null) {
+			if (on && liveViewEnabled) {
+				lvf.style.display="block";
+				lvf.src="/liveview";				
+			} else {
+				lvf.style.display="none";
+				lvf.src="";
+				lvf.height="0px";
+				lvf.style.height="0px";
+			}
+		}
+	}
 	
 	
 	
