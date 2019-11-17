@@ -596,11 +596,16 @@ function highlight(hurl)
 	fx=i.fx;
 	selectId("pal"+pal,"pal"+i.pal);
 	pal=i.pal;
-	var pos = hurl.indexOf("/win&PL=");
+	find ="/win&PL="
+	var pos = hurl.indexOf(find);
+	if (pos == -1) {
+	  find="/win&PS="
+	  pos = hurl.indexOf(find);
+	}
 	//console.log(pos+" "+pst+ " "+hurl);
 	var newPst=0;
 	if (pos > -1) {
-	  newPst=hurl.substring(pos+8);
+	  newPst=hurl.substring(pos+find.length);
 	  selectId("ps"+pst,"ps"+newPst);
 	  //console.log(newPst);
 	  pst=newPst;
@@ -660,6 +665,7 @@ if (d.querySelector('.oos-chk-ps').checked == false) {
  }
 if (d.querySelector('.oos-chk-ps').checked == true) {
 	 var url = "/win&PS=" + psNum;
+	 d.querySelector('.oos-chk-ps').checked = false;
  }
 EC(url);
 }
