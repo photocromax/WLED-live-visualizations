@@ -526,13 +526,11 @@ function GIO()
     var name = json.info.name;
     if (json.info.live) name = "(Live) " + name;
     e3.innerHTML = name;
-	liveViewEnabled = json.info.liveview;
-    if (!liveViewEnabled) {
-		liveViewSwitch(false)
-	}
     var s = json.state;
     d.getElementById("bris").value= (s.on)?s.bri:0;
     nla=s.nl.on;
+	liveViewEnabled = json.info.liveview;
+   	liveViewSwitch(s.on);
     d.getElementById('myoos-n').checked = s.udpn.send;
     d.getElementById('myoos-cy').checked = (s.pl >= 0);
     var selc=0; var ind=0;
