@@ -46,7 +46,6 @@
 			GIO();
 			setTimeout(function(){fillfx(0);}, 200);
 			setTimeout(function(){fillfx(1);}, 500);
-			setTimeout(function(){playLiveView();},800);
 		}
 		function GIO()
 		{
@@ -72,6 +71,8 @@
 							d.Cf.SX.value = this.responseXML.getElementsByTagName('sx')[0].childNodes[0].nodeValue;
 							d.Cf.IX.value = this.responseXML.getElementsByTagName('ix')[0].childNodes[0].nodeValue;
 							nla = (this.responseXML.getElementsByTagName('nl')[0].innerHTML)!=0?true:false;
+							liveViewEnabled = (this.responseXML.getElementsByTagName('lv')[0].childNodes[0].nodeValue==1)?true:false);
+							liveViewSwitch((d.Cf.SA.value>0)?true:false);
 							if(firstload){
 								d.Cf.NC.checked = (this.responseXML.getElementsByTagName('nf')[0].innerHTML)!=0?true:false;
 								d.Cf.SN.value = this.responseXML.getElementsByTagName('nd')[0].childNodes[0].nodeValue;
@@ -389,25 +390,6 @@
           el.selectedIndex=fp?fpi:fxi;
           if(!fp)fxn=json.length;
           UV();
-        })
-        .catch(function () {
-          el.innerHTML=e;
-        })
-    }
-	
-	function playLiveView()
-    {
-      e="<option>Error loading live view!</option>";
-      fetch('/json/info')
-        .then(res => {
-          if (!res.ok) {
-             el.innerHTML=e;
-          }
-          return res.json();
-        })
-        .then(json => {
-			liveViewEnabled = json.liveview;
-			if (!liveViewEnabled) liveViewSwitch(false)
         })
         .catch(function () {
           el.innerHTML=e;
